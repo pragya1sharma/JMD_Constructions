@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from 'react'
-import { loginUser } from "../services/authService";
+import { loginUser, registerUser, pickErrorMessage } from "../services/authService";
 
 
 const AuthContext = createContext(null)
@@ -13,11 +13,25 @@ export function AuthProvider({ children }) {
     setLoading(true)
     try {
       const data = await loginUser(credentials)
-      setUser(data.user)
+      setUser(data.data)
       setToken(data.token)
       return { success: true }
     } catch (err) {
-      return { success: false, message: err.message }
+      return { success: false, message: pickErrorMessage(err) }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const signup = async (payload) => {
+    setLoading(true)
+    try {
+      const data = await registerUser(payload)
+      setUser(data.data)
+      setToken(data.token)
+      return { success: true }
+    } catch (err) {
+      return { success: false, message: pickErrorMessage(err) }
     } finally {
       setLoading(false)
     }
@@ -30,7 +44,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, logout, loading }}
+      value={{ user, token, login, signup, logout, loading }}
     >
       {children}
     </AuthContext.Provider>

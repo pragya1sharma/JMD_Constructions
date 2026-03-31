@@ -10,6 +10,7 @@
 //Do all the imports, write the function **The return startement is the prime concern, export the function.
 
 import React from "react";
+import { Link as RouterLink } from "react-router-dom";
 import {
   Box,
   Container,
@@ -57,16 +58,25 @@ export default function LandingPage() {
       {/* navbar */}
       <Box as="nav" bg="white" position="sticky">
         <Container maxW="7xl">
-          <Flex justify="space-between" align="center" padding={4}>
-            <Heading size="md">Logo</Heading>
-            <Flex gap={4}>
+          <Flex justify="space-between" align="center" padding={4} flexWrap="wrap" gap={4}>
+            <Heading size="md" as={RouterLink} to="/">
+              <Text as="span" fontFamily="heading">
+                JMD{" "}
+              </Text>
+              <Text as="span" color="orange.500" fontFamily="heading">
+                Constructions
+              </Text>
+            </Heading>
+            <Flex gap={4} display={{ base: "none", md: "flex" }}>
               <Button variant="ghost" rounded="sm">Home</Button>
               <Button variant="ghost" rounded="sm">About Us</Button>
               <Button variant="ghost" rounded="sm">Projects</Button>
               <Button variant="ghost" rounded="sm">Contact Us</Button>
             </Flex>
-            <Flex>
-              <Button colorScheme="orange" rounded="sm">Login</Button>
+            <Flex gap={2}>
+              <Button as={RouterLink} to="/login" colorScheme="orange" rounded="sm" fontWeight="medium">
+                Log In
+              </Button>
             </Flex>
           </Flex>
         </Container>
@@ -104,10 +114,9 @@ export default function LandingPage() {
               streamline projects and deliver excellence.
             </Text>
 
-            <Flex gap={4} mt={6}>
-              <Button colorScheme="orange">Log In</Button>
-              <Button variant="outline" color="white">
-                Learn More
+            <Flex gap={4} mt={6} flexWrap="wrap">
+              <Button as={RouterLink} to="/login" colorScheme="orange" rounded="sm" fontWeight="medium">
+                Log In
               </Button>
             </Flex>
         </Flex>
