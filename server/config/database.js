@@ -3,7 +3,9 @@ const mongoose = require('mongoose');
 /**
  * CONNECT TO MONGODB, update on disconnect, errorsm and graceful shutdown
  * Purpose: Establish connection to MongoDB database
- * Why async? Database connection takes time, we wait for it
+ * Why async? Database connection takes time, we wait for it  isiliyae finally jbb 
+ * server.js se mongoDB connection aur ports wagera ki infomation aayegi usmian MongoDB
+ *  connected aur ye sbb last main aata hai -> as ASYNC!!
  */
 const connectDB = async () => {
   try {

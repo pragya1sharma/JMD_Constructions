@@ -48,11 +48,15 @@ import {
         ArrowForwardIcon
       } from "@chakra-ui/icons";
 
-
-
-
-
 export default function LandingPage() {
+    const scrollToSection = (id) =>{
+      const section = document.getElementById(id);
+      if(section){
+        section.scrollIntoView({
+          behavior : "smooth"
+        })
+      }
+    }
   return (
     <>
       {/* navbar */}
@@ -68,10 +72,10 @@ export default function LandingPage() {
               </Text>
             </Heading>
             <Flex gap={4} display={{ base: "none", md: "flex" }}>
-              <Button variant="ghost" rounded="sm">Home</Button>
-              <Button variant="ghost" rounded="sm">About Us</Button>
-              <Button variant="ghost" rounded="sm">Projects</Button>
-              <Button variant="ghost" rounded="sm">Contact Us</Button>
+              <Button variant="ghost" rounded="sm" onClick={() => scrollToSection('hero')}>Home</Button>
+              <Button variant="ghost" rounded="sm" onClick={() => scrollToSection('about')}>About Us</Button>
+              <Button variant="ghost" rounded="sm" onClick={() => scrollToSection('projects')}>Projects</Button>
+              <Button variant="ghost" rounded="sm" onClick={() => scrollToSection('footer')}>Contact Us</Button>
             </Flex>
             <Flex gap={2}>
               <Button as={RouterLink} to="/login" colorScheme="orange" rounded="sm" fontWeight="medium">
@@ -84,7 +88,7 @@ export default function LandingPage() {
 
       {/* ================= HERO SECTION ================= */}
 
-      <Box
+      <Box id="hero"
         h="90vh"
         bgImage={`url(${heroImg})`}
         bgSize="cover"
@@ -121,10 +125,10 @@ export default function LandingPage() {
             </Flex>
         </Flex>
         </Container>
-
+      </Box> {/* Closed hero Box */}
 
         {/* the separation section and a little about Buniyaad */}
-        <Box w="100%" bg="white">
+        <Box w="100%" bg="white" id="about">
           <Container maxW="7xl" py={20}>
             <Flex
               direction={{ base: "column", md: "row" }}
@@ -204,7 +208,7 @@ export default function LandingPage() {
                     Standards.
                     </Heading>
 
-                    <Button colorScheme="orange" mb={10}>
+                    <Button colorScheme="orange" mb={10} onClick={()=>{scrollToSection('footer')}}>
                     Contact Us →
                     </Button>
 
@@ -240,7 +244,8 @@ export default function LandingPage() {
                 </Box>
                 </Flex>
             </Box>
-      {/* ================= TRUST SECTION ================= */}
+
+      {/* ================= TRUST SECTION =====Part of about only============ */}
             <Box bg="gray.100" w="100%">
               <Container maxW="7xl" py={20}>
                 <Flex
@@ -353,7 +358,7 @@ export default function LandingPage() {
             </Box>
 
         {/* ================= SIGNATURE PROJECTS ================= */}
-        <Box bg="white" w="100%">
+        <Box bg="white" w="100%" id="projects">
           <Container maxW="7xl" py={16}>
 
             {/* Header */}
@@ -465,8 +470,9 @@ export default function LandingPage() {
 
           </Container>
         </Box>
+
     {/* ================= FOOTER ================= */}
-        <Box bg="black" color="gray.400" position="relative" overflow="hidden">
+        <Box bg="black" color="gray.400" position="relative" overflow="hidden" id="footer">
 
           <Container maxW="7xl" py={16}>
 
@@ -600,12 +606,8 @@ export default function LandingPage() {
 
         </Box>
 
-
-
-      </Box>
     </>
   );
 }
-
 
 ///Landing page done for now, Baaki chnages baad main, for now -> login form chnages, check -> Dashboard FE. ->Complete all FE aqnd then go to BE, then integrate.
