@@ -33,12 +33,12 @@ class AuthController {
     });
 });
 
-//get the presently logged in user at teh time of frontend refresh
-static getMe = asyncHandler(async(req,res) => {
-    const user = await AuthService.getUserById(req.user.id); //req.user is set in authMiddleware
+//get the presently logged in user at the time of frontend refresh
+static getMe = asyncHandler(async (req, res, next) => {
+    // No need for another DB call
     res.status(200).json({
         success: true,
-        data: user
+        user: req.user          // Already loaded and safe
     });
 });
 
