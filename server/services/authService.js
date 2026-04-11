@@ -122,6 +122,18 @@ class AuthService{
         }
         return this.getSafeUserData(user);
     }
-}
+
+    //If the JWT is valid but the user no longer exists in the database (deleted or somehow logged out} -> but the JWT key hasn't yet expired, so we do a firced log out.
+    static async validateIfExists(userId){
+        if(!userId) return NULL;
+
+        const user = await User.findById(userId);
+    
+        if (!user) {
+            return null;     
+        }
+        return this.getSafeUserData(user);
+        }
+    }
 
 module.exports = AuthService;
