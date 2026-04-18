@@ -1,4 +1,5 @@
 import Project from "../models/project.js";
+import AttendanceLog from "../models/attendanceLog.js";
 
 //create a new project
 export const createProjectService = async (data, userId) => {
@@ -33,6 +34,37 @@ export const deleteProjectService = async (projectId,user) =>{
 }
 
 //display/show according to pinned and status as with tenders.
+export const showFiltered = async (query) => {
+  const filters = {};
+  if(query.status) filters.status = query.status;
+  if(query.pinned !== undefined) filters.pinned = query.pinned;
+
+  const projects = await Project.find(filters);
+  return projects;
+}
+
 //assign/change contractor
+
+
 //assign/change supervisor
+
+
 //updation of associated attendance logs.
+// update associated attendance logs
+export const updateAttendanceService = async (projectId, body, user) => {
+  const project = await Project.findById(projectId);
+  if (!project) throw new Error("Project not found");
+
+  const isContractor = user.role === "contractor" && project.assignedContractor.toString() === user._id.toString();
+  const isSupervisor = user.role === "supervisor" && project.assignedSupervisor.toString() === user._id.toString();
+
+  if (!isContractor && !isSupervisor) throw new Error("Not authorized");
+
+  const updated = await AttendanceLog.updateMany(
+    { project: projectId },
+    body,
+    { new: true }
+  );
+  return updated;
+};
+

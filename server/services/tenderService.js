@@ -1,4 +1,5 @@
 import Tender from "../models/tenderModel.js";
+import project from ".."
 
 export const createTenderService = async (data, userId) => {
   const tender = await Tender.create({ ...data, createdBy: userId });
@@ -43,6 +44,7 @@ export const updateTenderService = async (tenderId, body, user) => {
   return updated;
 };
 
+//when a  tender is delted there sbould be two options, one to remove it permanently and the other to make it a project and assign it proper contractor , supervisor and all.
 export const deleteTenderService = async (tenderId,user) => {
     if(user.role!=="contractor") throw new error("Not authorised to delete tenders");
     const tender = await Tender.findById(tenderId);
