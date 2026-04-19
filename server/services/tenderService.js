@@ -1,5 +1,5 @@
 import Tender from "../models/tenderModel.js";
-import project from ".."
+import project from "../models/project.js";
 
 export const createTenderService = async (data, userId) => {
   const tender = await Tender.create({ ...data, createdBy: userId });
@@ -45,11 +45,47 @@ export const updateTenderService = async (tenderId, body, user) => {
 };
 
 //when a  tender is delted there sbould be two options, one to remove it permanently and the other to make it a project and assign it proper contractor , supervisor and all.
-export const deleteTenderService = async (tenderId,user) => {
-    if(user.role!=="contractor") throw new error("Not authorised to delete tenders");
-    const tender = await Tender.findById(tenderId);
+export const deleteTenderService = async (tenderId, user, action, extraData = {}) => {
+  if (user.role !== "contractor") {
+    throw new Error("Not authorised to delete tenders");
+  }
+
+  const tender = await Tender.findById(tenderId);
   if (!tender) throw new Error("Tender not found");
 
-  await tender.deleteOne();
-  return true;
+  // OPTION 1: Permanent delete
+  if (action === "delete") {
+    await tender.deleteOne();
+    return { message: "Tender deleted permanently" };
+  }
+
+  // OPTION 2: Convert to project
+  if (action === "convert") {
+    const { assignedContractor, assignedSupervisor, ...rest } = extraData;
+
+    if (!assignedContractor || !assignedSupervisor) {
+      throw new Error("Contractor and Supervisor must be assigned");
+    }
+
+    const projectData = {
+      ...tender.toObject(),
+      ...rest,
+      assignedContractor,
+      assignedSupervisor,
+      createdBy: user._id
+    };
+
+    delete projectData._id; // remove old id
+
+    const project = await Project.create(projectData);
+
+    await tender.deleteOne();
+
+    return {
+      message: "Tender converted to project",
+      project
+    };
+  }
+
+  throw new Error("Invalid action");
 };

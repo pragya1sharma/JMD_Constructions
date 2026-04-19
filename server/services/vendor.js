@@ -21,27 +21,27 @@ class VendorService{
     }
 
     static async filterVendors(query) {
-  const filter = {};
+      const filter = {};
 
-  // filter by category
-  if (query.category) {
-    filter.category = query.category;
+      // filter by category
+      if (query.category) {
+        filter.category = query.category;
+      }
+
+      // filter by status (isActive)
+      if (query.status !== undefined) {
+        filter.isActive = query.status === "true";
+      }
+
+      // filter by rating (minimum rating)
+      if (query.rating) {
+        filter.rating = { $gte: Number(query.rating) };
+      }
+
+      const vendors = await Vendor.find(filter);
+      return vendors;
+      }
   }
-
-  // filter by status (isActive)
-  if (query.status !== undefined) {
-    filter.isActive = query.status === "true";
-  }
-
-  // filter by rating (minimum rating)
-  if (query.rating) {
-    filter.rating = { $gte: Number(query.rating) };
-  }
-
-  const vendors = await Vendor.find(filter);
-  return vendors;
-    }
-}
 
 module.exports = VendorService;
 
