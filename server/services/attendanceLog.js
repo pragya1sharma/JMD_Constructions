@@ -1,11 +1,10 @@
-//attendance log service -> as such in the project service,I have added the methods to update AND add attendance, I need to make separate methods for attendance loga and then that can be imported in the projects section, instead of writing it twice.
-//attendance for supervisor,mistri,majdoor,(let it be these names for the sake of acccessibility.)and special fields only if needed like electrician, tractor driver,jcb,carpenter,plumber etc. -> the supervisor shopuld be able to create tehse new categories and update attandance forthese if needed.
-
-//to add/update attendace -> for each project, attendance will be per rpoject and not per person -> as mentioned above.
-/*
-//to view attendance for each project for each category,and a specific, also attendance is to be saved strictly corresponding to teh schema. and 
-*/
 import Attendance from "../models/Attendance.js";
+
+const DEFAULT_CATEGORIES = ['supervisor', 'mistri', 'mazdoor'];
+
+const PREDEFINED_EXTRA_CATEGORIES = [
+  'plumber', 'electrician', 'carpenter', 'painter', 'driver'
+];
 
 class AttendanceService {
 
@@ -19,11 +18,6 @@ class AttendanceService {
 
     attendance = await Attendance.create({
       project: projectId,
-      categories: [
-        { name: 'supervisor' },
-        { name: 'mistri' },
-        { name: 'mazdoor' },
-      ],
       logs: [],
     });
 
@@ -31,13 +25,18 @@ class AttendanceService {
   }
 
   /**
-   * Add a new category (custom role)
+   * Add a new category (custom role or predefined extra)
    */
   static async addCategory(projectId, categoryName) {
     const attendance = await Attendance.findOne({ project: projectId });
     if (!attendance) throw new Error('Attendance not initialized');
 
     const normalized = categoryName.trim().toLowerCase();
+
+    // cannot re-add a default category
+    if (DEFAULT_CATEGORIES.includes(normalized)) {
+      throw new Error('Category already exists as a default');
+    }
 
     const exists = attendance.categories.some(
       c => c.name.toLowerCase() === normalized
@@ -47,7 +46,7 @@ class AttendanceService {
 
     attendance.categories.push({
       name: normalized,
-      isCustom: true,
+      isCustom: !PREDEFINED_EXTRA_CATEGORIES.includes(normalized),
     });
 
     await attendance.save();
@@ -55,13 +54,15 @@ class AttendanceService {
   }
 
   /**
-   * Get all categories
+   * Get all categories (defaults + project-level added ones)
    */
   static async getCategories(projectId) {
     const attendance = await Attendance.findOne({ project: projectId });
     if (!attendance) throw new Error('Attendance not found');
 
-    return attendance.categories;
+    const defaults = DEFAULT_CATEGORIES.map(name => ({ name, isCustom: false }));
+
+    return [...defaults, ...attendance.categories];
   }
 
   /**
@@ -75,8 +76,11 @@ class AttendanceService {
     // Normalize date (ignore time)
     const targetDate = new Date(date).toDateString();
 
-    // Validate categories
-    const validCategories = attendance.categories.map(c => c.name);
+    // defaults + whatever extra categories are stored for this project
+    const validCategories = [
+      ...DEFAULT_CATEGORIES,
+      ...attendance.categories.map(c => c.name),
+    ];
 
     entries.forEach(e => {
       const cat = e.category.trim().toLowerCase();
@@ -161,4 +165,4 @@ class AttendanceService {
   }
 }
 
-module.exports = AttendanceService;
+export default AttendanceService;
