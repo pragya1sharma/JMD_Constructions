@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
+const { boolean } = require('zod');
 
 /**
  * Project lifecycle: Running | Completed (past) | Future (upcoming).
- * Supervisors: refs to User with role Supervisor.
+ * assignedSupervisor: ref to User with role Supervisor.
+ * assignedContractor: ref to User with role Contractor.
  */
 const projectSchema = new mongoose.Schema(
   {
@@ -13,10 +15,16 @@ const projectSchema = new mongoose.Schema(
       maxlength: [300, 'Project name cannot exceed 300 characters'],
     },
 
-    type: {
+    status: {
       type: String,
       required: [true, 'Please choose Running, Completed, or Future'],
       enum: ['Running', 'Completed', 'Future'],
+    },
+
+    pinned:{
+      type: Boolean,
+      required: [true]
+      
     },
 
     startDate: {
@@ -63,19 +71,16 @@ const projectSchema = new mongoose.Schema(
       min: [0, 'Budget cannot be negative'],
     },
 
-    Supervisors: {
-      type: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'User',
-        },
-      ],
-      validate: {
-        validator: function (value) {
-          return Array.isArray(value) && value.length > 0;
-        },
-        message: 'At least one supervisor is required',
-      },
+    assignedContractor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'A contractor must be assigned to the project'],
+    },
+
+    assignedSupervisor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'A supervisor must be assigned to the project'],
     },
 
     siteLocation: {
@@ -98,15 +103,16 @@ const projectSchema = new mongoose.Schema(
       maxlength: [2000, 'Notes cannot exceed 2000 characters'],
     },
 
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
+    //No need of profile Image for Now, will do this for V2.
+    // createdBy: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: 'User',
+    // },
   },
   { timestamps: true }
 );
 
-projectSchema.index({ type: 1, updatedAt: -1 });
-projectSchema.index({ type: 1, endDate: -1 });
+projectSchema.index({ status: 1, updatedAt: -1 });
+projectSchema.index({ status: 1, endDate: -1 });
 
 module.exports = mongoose.model('Project', projectSchema);
