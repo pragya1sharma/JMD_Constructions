@@ -1,4 +1,5 @@
 import Attendance from "../models/Attendance.js";
+import ErrorResponse from "../utils/errorResponse.js";
 
 const DEFAULT_CATEGORIES = ['supervisor', 'mistri', 'mazdoor'];
 
@@ -18,6 +19,7 @@ class AttendanceService {
 
     attendance = await Attendance.create({
       project: projectId,
+      recordedBy : userId,
       logs: [],
     });
 
@@ -29,20 +31,20 @@ class AttendanceService {
    */
   static async addCategory(projectId, categoryName) {
     const attendance = await Attendance.findOne({ project: projectId });
-    if (!attendance) throw new Error('Attendance not initialized');
+    if (!attendance) throw new ErrorResponse('Attendance not initialized',404);
 
     const normalized = categoryName.trim().toLowerCase();
 
     // cannot re-add a default category
     if (DEFAULT_CATEGORIES.includes(normalized)) {
-      throw new Error('Category already exists as a default');
+      throw new ErrorResponse('Category already exists as a default',403);
     }
 
     const exists = attendance.categories.some(
       c => c.name.toLowerCase() === normalized
     );
 
-    if (exists) throw new Error('Category already exists');
+    if (exists) throw new ErrorResponse('Category already exists',403);
 
     attendance.categories.push({
       name: normalized,
@@ -58,7 +60,7 @@ class AttendanceService {
    */
   static async getCategories(projectId) {
     const attendance = await Attendance.findOne({ project: projectId });
-    if (!attendance) throw new Error('Attendance not found');
+    if (!attendance) throw new ErrorResponse('Attendance not found',404);
 
     const defaults = DEFAULT_CATEGORIES.map(name => ({ name, isCustom: false }));
 
@@ -71,7 +73,7 @@ class AttendanceService {
    */
   static async markAttendance(projectId, date, entries, userId) {
     const attendance = await Attendance.findOne({ project: projectId });
-    if (!attendance) throw new Error('Attendance not initialized');
+    if (!attendance) throw new ErrorResponse('Attendance not initialized',404);
 
     // Normalize date (ignore time)
     const targetDate = new Date(date).toDateString();
@@ -86,7 +88,7 @@ class AttendanceService {
       const cat = e.category.trim().toLowerCase();
 
       if (!validCategories.includes(cat)) {
-        throw new Error(`Invalid category: ${e.category}`);
+        throw new ErrorResponse(`Invalid category: ${e.category}`,404);
       }
 
       if (e.count < 0) {
@@ -124,7 +126,7 @@ class AttendanceService {
    */
   static async getProjectAttendance(projectId) {
     const attendance = await Attendance.findOne({ project: projectId });
-    if (!attendance) throw new Error('Attendance not found');
+    if (!attendance) throw new ErrorResponse('Attendance not found',404);
 
     return attendance;
   }
@@ -134,7 +136,7 @@ class AttendanceService {
    */
   static async getAttendanceByDate(projectId, date) {
     const attendance = await Attendance.findOne({ project: projectId });
-    if (!attendance) throw new Error('Attendance not found');
+    if (!attendance) throw new ErrorResponse('Attendance not found',404);
 
     const targetDate = new Date(date).toDateString();
 
@@ -150,7 +152,7 @@ class AttendanceService {
    */
   static async getCategoryAttendance(projectId, categoryName) {
     const attendance = await Attendance.findOne({ project: projectId });
-    if (!attendance) throw new Error('Attendance not found');
+    if (!attendance) throw new ErrorResponse('Attendance not found',404);
 
     const category = categoryName.trim().toLowerCase();
 
