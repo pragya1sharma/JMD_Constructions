@@ -1,8 +1,8 @@
-const app = require('./app');
-const connectDB = require('./config/database');
+import app from './app.js';
+import connectDB from './config/database.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
-// Load environment variables from .env file
-require('dotenv').config();
 
 const PORT = process.env.PORT || 5173;
 
