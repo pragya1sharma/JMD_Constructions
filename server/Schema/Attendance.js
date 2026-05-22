@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 /**
  * Daily attendance for workers on a project.
@@ -65,4 +65,4 @@ const attendanceSchema = new mongoose.Schema(
 // Ensure one attendance document per project
 attendanceSchema.index({ project: 1 }, { unique: true });
 
-module.exports = mongoose.model('Attendance', attendanceSchema);
+export default mongoose.model('Attendance', attendanceSchema);

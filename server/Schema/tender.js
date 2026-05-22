@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 /**
  * Tender — external or internal opportunities; supervisors mark interest / pin.
@@ -56,4 +56,4 @@ const tenderSchema = new mongoose.Schema(
 tenderSchema.index({ status: 1, deadline: 1 });
 tenderSchema.index({ name: 1 });
 
-module.exports = mongoose.model('Tender', tenderSchema);
+export default mongoose.model('Tender', tenderSchema);

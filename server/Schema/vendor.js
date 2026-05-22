@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const vendorSchema = new mongoose.Schema(
   {
@@ -61,4 +61,4 @@ const vendorSchema = new mongoose.Schema(
 vendorSchema.index({ name: 1 });
 vendorSchema.index({ category: 1, isActive: 1 });
 
-module.exports = mongoose.model('Vendor', vendorSchema);
+export default mongoose.model('Vendor', vendorSchema);
