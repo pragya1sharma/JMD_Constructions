@@ -1,70 +1,94 @@
 import Project from "../models/project.js";
 import AttendanceLog from "../models/attendanceLog.js";
+import ErrorResponse from "../utils/errorResponse.js";
 
-//create a new project
-export const createProjectService = async (data, userId) => {
-  const project = await Project.create({ ...data, createdBy: userId });
-  return project;
-};
+class ProjectService {
 
-//update an exisiting project
-export const updateProjectService = async (projectId, body, user) => {
-  const project = await Project.findById(projectId);
-  if (!project) throw new Error("Project not found");
+  static async createProject(data, userId) {
+    // const user = await findById(userId);
+    // if(!user) throw new ErrorResponse("The contractor does not exist", 404);
+    // checking for the user is redundant at this stage, as agr project create krr raha hai to login/sign up already hua hai and the user indeed exists, and 
+    // ye saare middlewares se already pass hua hai -> so this is redundant.
 
-  // already have assignedContractor and assignedSupervisor from fetched project
-  if (user.role !== "contractor" || project.assignedContractor.toString() !== user._id.toString()) {
-    throw new Error("Not authorized");
+    const project = await Project.create({ ...data, assignedContractor: userId });
+    return project;
   }
 
-  const updated = await Project.findByIdAndUpdate(projectId, body, { new: true });
-  return updated;
-};
-//delete
-export const deleteProjectService = async (projectId,user) =>{
-     const project = await Project.findById(projectId);
-     if(!project) throw new Error("Proejct not found!");
+  //update an exisiting project 
+  static async updateProject(projectId, body, user) {
+    const project = await Project.findById(projectId);
+    if (!project) throw new ErrorResponse("Project not found", 404);
 
-     if (user.role !== "contractor" || project.assignedContractor.toString() !== user._id.toString()) {
-        throw new Error("Not authorized");
+    if (user.role !== "Contractor" || project.assignedContractor.toString() !== user._id.toString()) {
+      throw new ErrorResponse("Not authorized", 403);
+    }
+
+    Object.assign(project, body);  // merge body fields onto the project document and overwrite the existing fields to the new body.
+    const updated = await project.save();
+
+    return updated;
+  }
+
+  //delete 
+  static async deleteProjectService(projectId, user) {
+    const project = await Project.findById(projectId);
+    if (!project) throw new ErrorResponse("Project not found!", 404);
+
+    if (user.role !== "Contractor" || project.assignedContractor.toString() !== user._id.toString()) {
+      throw new ErrorResponse("Not authorized", 403);
     }
     await project.deleteOne(); //delteOne has to be on the instance and not the model.
     return true;
+  }
+
+  //display/show according to pinned and status as with tenders. -------BUGGGYYYYY---------------
+  static async showFiltered(query) {
+    const filters = {};
+    if (query.status) filters.status = query.status;
+    if (query.pinned !== undefined) filters.pinned = query.pinned;
+
+    const projects = await Project.find(filters);
+    return projects;
+  }
+
+  //GETPROJECT BY ID
+  static async getProjectById(projectId) {
+    const project = await Project.findById(projectId);
+    if (!project) throw new ErrorResponse('Project Not found', 404);
+    return project;
+  }
+
+  //CHANGE THE SUPERVISOR
+  static async chnageSupervisor(projectId, newSup, user) {
+
+    if (user.role !== 'Contractor') throw new ErrorResponse('No supervisor can change the current project supervisors.',403);
+
+    const project = await Project.findById(projectId);
+    if (!project) throw new ErrorResponse('Project with the mentioend ID Not found', 404);
+
+    if (user._id.toString() !== project.assignedContractor.toString()) throw new ErrorResponse("This project is not managed by you, only assigend contractors can change the supervisors.",403);
+    if (project.assignedSupervisor.toString() != newSup._id.toString()) {
+      project.assignedSupervisor = newSup._id;
+      await project.save();
+    }
+    return { message: `Supervisor for the project ${projectId} changed to ${project.assignedSupervisor}` };
+  }
+
+  
+  // update associated attendance logs
+  static async updateAttendanceService(projectId, body, user) {
+    const project = await Project.findById(projectId);
+    if (!project) throw new ErrorResponse("Project not found",404);
+
+    const isContractor = user.role === "Contractor" && project.assignedContractor.toString() === user._id.toString();
+    const isSupervisor = user.role === "Supervisor" && project.assignedSupervisor.toString() === user._id.toString();
+
+    if (!isContractor && !isSupervisor) throw new ErrorResponse("Not authorized",403);
+
+    await AttendanceLog.updateMany({ project: projectId }, { $set: body });
+    return { message: 'Attendance logs updated successfully' };
+  }
 
 }
 
-//display/show according to pinned and status as with tenders.
-export const showFiltered = async (query) => {
-  const filters = {};
-  if(query.status) filters.status = query.status;
-  if(query.pinned !== undefined) filters.pinned = query.pinned;
-
-  const projects = await Project.find(filters);
-  return projects;
-}
-
-//assign/change contractor
-
-
-//assign/change supervisor
-
-
-//updation of associated attendance logs.
-// update associated attendance logs
-export const updateAttendanceService = async (projectId, body, user) => {
-  const project = await Project.findById(projectId);
-  if (!project) throw new Error("Project not found");
-
-  const isContractor = user.role === "contractor" && project.assignedContractor.toString() === user._id.toString();
-  const isSupervisor = user.role === "supervisor" && project.assignedSupervisor.toString() === user._id.toString();
-
-  if (!isContractor && !isSupervisor) throw new Error("Not authorized");
-
-  const updated = await AttendanceLog.updateMany(
-    { project: projectId },
-    body,
-    { new: true }
-  );
-  return updated;
-};
-
+export default ProjectService;
