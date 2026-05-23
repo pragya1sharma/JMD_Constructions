@@ -1,9 +1,10 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 /**
- * Simple site inventory per project
+ * Item schema – each document represents a single material/item on a project site.
+ * (e.g., Cement, Steel, Bricks)
  */
-const inventorySchema = new mongoose.Schema(
+const itemSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -26,7 +27,6 @@ const inventorySchema = new mongoose.Schema(
       default: 0,
     },
 
-    //set 0 for this for now
     restockThreshold: {
       type: Number,
       min: [0, 'Threshold cannot be negative'],
@@ -66,4 +66,4 @@ const inventorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Inventory', inventorySchema);
+export default mongoose.model('Item', itemSchema);
