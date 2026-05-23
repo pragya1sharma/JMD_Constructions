@@ -1,105 +1,131 @@
-const Inventory = require('../models/Inventory');
+import InventoryItem from '../models/inventoryItem.js';
+import ErrorResponse from '../utils/ErrorResponse.js';
 
 class InventoryService {
   /**
    * Create a new inventory item
    */
   static async createItem({ name, unit, projectId, userId }) {
-    const item = await Inventory.create({
+    const item = await InventoryItem.create({
       name,
       unit,
       quantity: 0,
       project: projectId,
       createdBy: userId,
     });
-
     return item;
   }
 
   /**
-   * Add stock (IN)
+   * Add stock (IN) to a specific item
    */
-  static async addStock(inventoryId, qty) {
+  static async addStock(itemId, qty) {
     if (qty <= 0) {
-      throw new Error('Quantity must be greater than 0');
+      throw new ErrorResponse('Quantity must be greater than 0', 400);
     }
 
-    const inventory = await Inventory.findById(inventoryId);
-    if (!inventory) throw new Error('Item not found');
+    const item = await InventoryItem.findById(itemId);
+    if (!item) throw new ErrorResponse('Item not found', 404);
 
-    inventory.quantity += qty;
-
-    inventory.usageLogs.push({
+    item.quantity += qty;
+    item.usageLogs.push({
       type: 'IN',
       quantity: qty,
     });
 
-    await inventory.save();
-    return inventory;
+    await item.save();
+    return item;
   }
 
   /**
-   * Use stock (OUT)
+   * Use stock (OUT) from a specific item
    */
-  static async useStock(inventoryId, qty) {
+  static async useStock(itemId, qty) {
     if (qty <= 0) {
-      throw new Error('Quantity must be greater than 0');
+      throw new ErrorResponse('Quantity must be greater than 0', 400);
     }
 
-    const inventory = await Inventory.findById(inventoryId);
-    if (!inventory) throw new Error('Item not found');
+    const item = await InventoryItem.findById(itemId);
+    if (!item) throw new ErrorResponse('Item not found', 404);
 
-    if (inventory.quantity < qty) {
-      throw new Error('Not enough stock');
+    if (item.quantity < qty) {
+      throw new ErrorResponse('Not enough stock', 400);
     }
 
-    inventory.quantity -= qty;
-
-    inventory.usageLogs.push({
+    item.quantity -= qty;
+    item.usageLogs.push({
       type: 'OUT',
       quantity: qty,
     });
 
-    await inventory.save();
-    return inventory;
+    await item.save();
+    return item;
   }
 
   /**
-   * Get all inventory for a project
+   * Get all items for a project
    */
   static async getProjectInventory(projectId) {
-    return await Inventory.find({ project: projectId }).sort({ createdAt: -1 });
+    return await InventoryItem.find({ project: projectId }).sort({ createdAt: -1 });
   }
 
   /**
-   * Get inventory by ID
+   * Get a single item by ID
    */
-  static async getInventoryById(inventoryId) {
-    const inventory = await Inventory.findById(inventoryId);
-    if (!inventory) throw new Error('Item not found');
-    return inventory;
+  static async getItemById(itemId) {
+    const item = await InventoryItem.findById(itemId);
+    if (!item) throw new ErrorResponse('Item not found', 404);
+    return item;
   }
 
   /**
-   * Get usage logs
+   * Get usage logs for a specific item
    */
-  static async getUsageLogs(inventoryId) {
-    const inventory = await Inventory.findById(inventoryId);
-    if (!inventory) throw new Error('Item not found');
-    return inventory.usageLogs;
+  static async getUsageLogs(itemId) {
+    const item = await InventoryItem.findById(itemId);
+    if (!item) throw new ErrorResponse('Item not found', 404);
+    return item.usageLogs;
   }
 
   /**
-   * Get total used quantity
+   * Get total used quantity for an item
    */
-  static async getTotalUsed(inventoryId) {
-    const inventory = await Inventory.findById(inventoryId);
-    if (!inventory) throw new Error('Item not found');
+  static async getTotalUsed(itemId) {
+    const item = await InventoryItem.findById(itemId);
+    if (!item) throw new ErrorResponse('Item not found', 404);
 
-    return inventory.usageLogs
+    return item.usageLogs
       .filter(log => log.type === 'OUT')
       .reduce((sum, log) => sum + log.quantity, 0);
   }
+
+  /**
+   * Delete an item
+   */
+  static async deleteItem(itemId) {
+    const item = await InventoryItem.findByIdAndDelete(itemId);
+    if (!item) throw new ErrorResponse('Item not found', 404);
+    return item;
+  }
+
+  /**
+   * Get all items with stock below a threshold
+   */
+    static async getLowStockItems(projectId) {
+      return await InventoryItem.find({
+          project: projectId,
+          $expr: { $lte: ['$quantity', '$restockThreshold'] }
+      });
+  }
+  /*
+  update an item
+  */
+
+  static async updateItem(itemId,data){
+    const item =await InventoryItem.findByIdAndUpdate(itemId,{$set:data},{new:true});
+    if(!item) throw new ErrorResponse('Item not found', 404); // ← add this
+    return item;
+  }
 }
 
-module.exports = InventoryService;
+export default  InventoryService;

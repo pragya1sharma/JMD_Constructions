@@ -1,3 +1,4 @@
+//understand the functions carefully - a little nested.
 import Attendance from "../models/Attendance.js";
 import ErrorResponse from "../utils/errorResponse.js";
 
@@ -12,6 +13,7 @@ class AttendanceService {
   /**
    * Initialize attendance for a project (only once)
    */
+  //good functions not very straight as done till NOW, so pay close attention.
   static async initProjectAttendance(projectId, userId) {
     let attendance = await Attendance.findOne({ project: projectId });
 
@@ -19,7 +21,6 @@ class AttendanceService {
 
     attendance = await Attendance.create({
       project: projectId,
-      recordedBy : userId,
       logs: [],
     });
 
@@ -92,7 +93,7 @@ class AttendanceService {
       }
 
       if (e.count < 0) {
-        throw new Error('Count cannot be negative');
+        throw new ErrorResponse('Count cannot be negative',400);
       }
 
       // normalize entry category
