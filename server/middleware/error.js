@@ -1,4 +1,4 @@
-const ErrorResponse = require('../utils/errorResponse');
+import ErrorResponse from '../utils/errorResponse';
 
 /**
  * GLOBAL ERROR HANDLER
@@ -47,4 +47,4 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
-module.exports = errorHandler;
+export default errorHandler;

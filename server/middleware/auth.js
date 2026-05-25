@@ -1,6 +1,6 @@
-const asyncHandler = require('express-async-handler');
-const ErrorResponse = require('../utils/errorResponse');
-const AuthService = require('../services/authService');
+import asyncHandler from 'express-async-handler';
+import ErrorResponse from '../utils/errorResponse.js';
+import AuthService from '../services/authService.js';
 
 const protect = asyncHandler(async (req, res, next) => {
     let token;
