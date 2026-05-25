@@ -1,4 +1,4 @@
-const projectSchema = require('../Schema/Project.js');
+import mongoose from 'mongoose';
+import projectSchema from '../Schema/Project.js';
 
-
-const project = mongoose.model(project,'projectSchema');
+export default mongoose.model('Project', projectSchema);

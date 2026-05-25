@@ -1,4 +1,4 @@
-const tender = require('../Schema/tender.js');
-const tenderSchema = require('../Schema/tender.js');
+import mongoose from 'mongoose';
+import tenderSchema from '../Schema/tender.js';
 
-const tender = mongoose.model(tender,'tenderSchema');
+export default mongoose.model('Tender', tenderSchema);
