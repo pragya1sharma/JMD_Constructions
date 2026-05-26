@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 /**
  * On-site workers (not Contractor/Supervisor app users) — used for attendance.
@@ -42,4 +42,4 @@ const workerSchema = new mongoose.Schema(
 workerSchema.index({ project: 1, name: 1 });
 workerSchema.index({ project: 1, isActive: 1 });
 
-module.exports = mongoose.model('Worker', workerSchema);
+export default mongoose.model('Worker', workerSchema);

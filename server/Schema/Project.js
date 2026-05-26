@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const { boolean } = require('zod');
+import mongoose from 'mongoose';
+//we haven'r used zod here, did without it , used zod in the validations
 
 /**
  * Project lifecycle: Running | Completed (past) | Future (upcoming).
@@ -115,4 +115,4 @@ const projectSchema = new mongoose.Schema(
 projectSchema.index({ status: 1, updatedAt: -1 });
 projectSchema.index({ status: 1, endDate: -1 });
 
-module.exports = mongoose.model('Project', projectSchema);
+export default mongoose.model('Project', projectSchema);
