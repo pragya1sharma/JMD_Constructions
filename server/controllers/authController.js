@@ -1,5 +1,5 @@
-const asyncHandler = require('../utils/asyncHandler');
-const AuthService = require('../services/authService');
+import  asyncHandler from '../utils/asyncHandler.js';
+import AuthService from '../services/authService.js';
 
 class AuthController {
     //Register a new user
@@ -30,8 +30,8 @@ class AuthController {
             message : 'Login Successful.',
             token,
             data : user
+        });
     });
-});
 
 //get the presently logged in user at the time of frontend refresh
 static getMe = asyncHandler(async (req, res, next) => {
@@ -55,6 +55,28 @@ static getMe = asyncHandler(async (req, res, next) => {
     });
   });
 
-}
+  //chnagePassword
+  static changePassword = asyncHandler(async(req,res)=>{
+    const userId = req.user._id;
+    const oldPassword = req.body.oldPassword;
+    const newPassword = req.body.newPassword;
 
-module.exports = AuthController;
+    const msg = await AuthService.changePassword(userId,oldPassword,newPassword);
+    res.status(200).json({
+        message:msg,
+        success:true
+    });
+  });
+  //deleteUser
+  static deleteUser = asyncHandler(async(req,res)=>{
+    const userId = req.user._id;
+    const msg = await AuthService.deleteUser(userId);
+    res.status(200).json({
+        message:msg,
+        success:true
+    });
+  });
+  //
+
+}
+export default AuthController;
