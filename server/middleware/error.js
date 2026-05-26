@@ -1,4 +1,4 @@
-import ErrorResponse from '../utils/errorResponse';
+import ErrorResponse from '../utils/errorResponse.js';
 
 /**
  * GLOBAL ERROR HANDLER

@@ -1,34 +1,22 @@
-import { validationResult } from 'express-validator';
+// middleware/validation.js
+const validateRequest = (schema) => {
+    return (req, res, next) => {
+        const result = schema.safeParse(req.body);
 
-/**
- * VALIDATION MIDDLEWARE
- * Generic middleware to validate any request
- */
-const validateRequest =  (validations) => {
-  return async (req, res, next) => {
-    // Run all validations and then execute the functions
-    await Promise.all(validations.map(validation => validation.run(req)));
+        if (result.success) {
+            req.body = result.data; // replace with cleaned/parsed data
+            return next();
+        }
 
-    
-    const errors = validationResult(req);
-    
-    if (errors.isEmpty()) {
-      return next();
-    }
-
-    
-    const formattedErrors = errors.array().map(err => ({
-      field: err.path,
-      message: err.msg,
-      value: err.value
-    }));
-
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors: formattedErrors
-    });
-  };
+        return res.status(400).json({
+            success: false,
+            message: 'Validation failed',
+            errors: result.error.errors.map(e => ({
+                field: e.path.join('.'),
+                message: e.message
+            }))
+        });
+    };
 };
 
-export default { validateRequest };
+export { validateRequest };

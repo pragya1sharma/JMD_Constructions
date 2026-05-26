@@ -2,6 +2,10 @@ import asyncHandler from 'express-async-handler';
 import ErrorResponse from '../utils/errorResponse.js';
 import AuthService from '../services/authService.js';
 
+
+//protect will be used in mostly all of the routes excrpt for registration and logging in.
+//ensures ki tumm logged in ho aur tumhare pass valid jwt token hai before you perform the actions.
+
 const protect = asyncHandler(async (req, res, next) => {
     let token;
 
@@ -13,28 +17,27 @@ const protect = asyncHandler(async (req, res, next) => {
         throw new ErrorResponse('Please login to continue', 401);
     }
 
-    try {
-        // 1. Verify JWT
-        const decoded = AuthService.verifyToken(token);
+    const decoded = AuthService.verifyToken(token);
+    const currentUser = await AuthService.validateIfExists(decoded.id);
 
-        // 2. Check if user still exists in database
-        const currentUser = await AuthService.validateIfExists(decoded.id);
-
-        if (!currentUser) {
-            throw new ErrorResponse('Session no longer valid. Please login again.', 401);
-        }
-
-        // 3. Attach full safe user object to req.user
-        req.user = currentUser;     // Now contains id, name, role, phone, etc.
-
-        next();
-    } 
-    catch (error) {
-        if (error.name === 'TokenExpiredError') {
-            throw new ErrorResponse('Session expired. Please login again', 401);
-        }
-        throw error;   // Re-throw other errors (including our custom one)
+    if (!currentUser) {
+        throw new ErrorResponse('Session no longer valid. Please login again.', 401);
     }
+
+    req.user = currentUser;
+    next();
 });
 
-exports.protect = protect;
+const authorize = (...roles) => {
+    return (req, res, next) => {
+        if (!roles.includes(req.user.role)) {
+            throw new ErrorResponse(
+                `Access denied. This action requires: ${roles.join(', ')}`,
+                403
+            );
+        }
+        next();
+    };
+};
+
+export { protect, authorize };
