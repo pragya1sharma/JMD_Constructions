@@ -1,35 +1,19 @@
-const { body } = require('express-validator');
+// validations/authValidation.js
+import { z } from 'zod';
 
-/**
- * VALIDATION SCHEMAS
- * Pure validation rules to validate the input data at the request boundary.
- */
+export const registerSchema = z.object({
+    name: z.string().min(1, 'Name is required').max(50, 'Name too long'),
+    phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    role: z.enum(['Contractor', 'Supervisor'], { message: 'Role must be Contractor or Supervisor' })
+});
 
-exports.registerSchema = [
-  body('name')
-    .trim()
-    .notEmpty()
-    .withMessage('Name is required')
-    .isLength({ max: 50 })
-    .withMessage('Name cannot exceed 50 characters'),
+export const loginSchema = z.object({
+    phone: z.string().min(1, 'Phone is required'),
+    password: z.string().min(1, 'Password is required')
+});
 
-  body('password')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters'),
-
-  body('phone')
-    .optional()
-    .matches(/^[6-9]\d{9}$/)
-    .withMessage('Please provide a valid 10-digit Indian phone number'),
-
-];
-
-exports.loginSchema = [
-  body('phone')
-    .matches(/^[6-9]\d{9}$/)
-    .withMessage('Please provide a valid 10-digit Indian phone number'),
-
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required')
-];
+export const changePasswordSchema = z.object({
+    oldPassword: z.string().min(1, 'Old password is required'),
+    newPassword: z.string().min(6, 'New password must be at least 6 characters')
+});
