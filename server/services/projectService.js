@@ -1,5 +1,5 @@
 import Project from "../models/project.js";
-import AttendanceLog from "../models/attendanceLog.js";
+import AttendanceLog from "../models/Attendance.js"; // 
 import ErrorResponse from "../utils/errorResponse.js";
 
 class ProjectService {
@@ -30,7 +30,7 @@ class ProjectService {
   }
 
   //delete 
-  static async deleteProjectService(projectId, user) {
+  static async deleteProject(projectId, user) {
     const project = await Project.findById(projectId);
     if (!project) throw new ErrorResponse("Project not found!", 404);
 
@@ -59,7 +59,7 @@ class ProjectService {
   }
 
   //CHANGE THE SUPERVISOR
-  static async chnageSupervisor(projectId, newSup, user) {
+  static async changeSupervisor(projectId, newSup, user) {
 
     if (user.role !== 'Contractor') throw new ErrorResponse('No supervisor can change the current project supervisors.',403);
 
@@ -76,7 +76,7 @@ class ProjectService {
 
   
   // update associated attendance logs
-  static async updateAttendanceService(projectId, body, user) {
+  static async updateAttendance(projectId, body, user) {
     const project = await Project.findById(projectId);
     if (!project) throw new ErrorResponse("Project not found",404);
 
@@ -88,6 +88,24 @@ class ProjectService {
     await AttendanceLog.updateMany({ project: projectId }, { $set: body });
     return { message: 'Attendance logs updated successfully' };
   }
+
+  //assign a  supervisor to a project with no supervisor
+  static async assignSupervisor(projectId, supervisorId, user) {
+    const project = await Project.findById(projectId);
+    if (!project) throw new ErrorResponse('Project not found', 404);
+
+    if (project.assignedSupervisor) {
+        throw new ErrorResponse('Project already has a supervisor. Use change supervisor instead.', 400);
+    }
+
+    const supervisor = await User.findOne({ _id: supervisorId, role: 'Supervisor' });
+    if (!supervisor) throw new ErrorResponse('Supervisor not found', 404);
+
+    project.assignedSupervisor = supervisorId;
+    await project.save();
+
+    return `Supervisor ${supervisor.name} has been assigned to the project`;
+}
 
 }
 

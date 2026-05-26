@@ -1,4 +1,4 @@
-import Tender from "../models/tenderModel.js";
+import Tender from "../models/tender.js";
 import Project from "../models/project.js";
 import ErrorResponse from "../utils/errorResponse.js";
 

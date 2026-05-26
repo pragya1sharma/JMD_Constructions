@@ -1,5 +1,5 @@
 import Project from "../models/project.js";
-import Tender from "../models/tenderModel.js";
+import Tender from "../models/tender.js";
 import Worker from "../models/Worker.js";
 import Inventory from "../models/inventoryItem.js";
 import Attendance from "../models/Attendance.js";

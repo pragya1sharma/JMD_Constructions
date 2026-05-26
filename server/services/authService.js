@@ -113,19 +113,6 @@ class AuthService{
     };
    }
 
-   /*
-   Get user by ID
-    @param {String} id - User ID
-    @returns {Object} - User object
-   */
-    static async getUserById(id){
-        const user = await User.findById(id);
-        if(!user){
-            throw new ErrorResponse('User not found', 404);
-        }
-        return this.getSafeUserData(user);
-    }
-
     //If the JWT is valid but the user no longer exists in the database (deleted or somehow logged out} -> but the JWT key hasn't yet expired, so we do a firced log out.
     static async validateIfExists(userId){
         if(!userId) return null;
@@ -166,16 +153,6 @@ class AuthService{
             throw new ErrorResponse('User not found', 404);
         }
         return {message : `User ${user.name} has been successfully deleted`};
-    }
-    // getAllSupervisors() -> {suggestion taken} as the contractor would need to know about all the supervisors to assign them any work.
-    static async getAllSupervisors(){
-
-        //I have to get all the users with the role as supervisors, in an array , if that array is empty, then return an errroResponse, otherwise return the found supervisors, randomly.
-
-        const allSupervisors = await User.find({role:'Supervisor'});  //find in mongoose takes in a query object with the condition for searching the documents.
-
-        if(allSupervisors.length===0) throw new ErrorResponse('no supervisor found',404);   //length is a property in js not a method/function => no ()
-        return allSupervisors.map(u => this.getSafeUserData(u));
     }
     }
 
