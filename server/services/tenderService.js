@@ -5,63 +5,49 @@ import ErrorResponse from "../utils/errorResponse.js";
 class TenderService {
 
   static async createTenderService(data, userId) {
-    const tender = await Tender.create({ ...data, createdBy: userId });
-    return tender;
-  }
-
-  // 
-  static async getAllTendersService(query, userId) {
-    const { status, isPinned, interested } = query;
-
-    const filter = {};
-    if (status) filter.status = status;
-    if (isPinned) filter.pinnedBy = userId;
-    if (interested) filter.interestedBy = userId;
-
-    const tenders = await Tender.find(filter).sort({ createdAt: -1 });
-    return tenders;
-  }
-
-  static async updateTenderService(tenderId, body, user) {
-    const tender = await Tender.findById(tenderId);
-    if (!tender) throw new ErrorResponse("Tender not found",404);
-
-    // interest toggle — both roles
-    if (body.toggleInterest) {
-      const alreadyInterested = tender.interestedBy.includes(user._id);
-      if (alreadyInterested) {
-        tender.interestedBy.pull(user._id);
-      } else {
-        tender.interestedBy.push(user._id);
-      }
-      await tender.save();
+      const tender = await Tender.create({ ...data, createdBy: userId });
       return tender;
     }
 
-    if(body.togglePin){
-      const alreadyPinned = tender.pinnedBy.includes(user._id);
-      if(alreadyPinned){
-        tender.pinnedBy.pull(user._id);
-      }
-      else{
-        tender.pinnedBy.push(user._id);
-      }
-      await tender.save()
-      return tender;
-    }
+    // 
+    static async updateTenderService(tenderId, body, user) {
+      const tender = await Tender.findById(tenderId);
+      if (!tender) throw new ErrorResponse("Tender not found", 404);
 
-    // edit/pin — contractor only
-    if (user.role !== "Contractor") throw new ErrorResponse("Not authorized",403);
+      // interest toggle — both roles
+      if (body.toggleInterest) {
+          const alreadyInterested = tender.interestedBy.includes(user._id);
+          alreadyInterested
+              ? tender.interestedBy.pull(user.id)
+              : tender.interestedBy.push(user.id);
+          await tender.save();
+          return tender;
+      }
 
-    const updated = await Tender.findByIdAndUpdate(tenderId, body, { new: true });
-    return updated;
+      if (body.togglePin) {
+          const alreadyPinned = tender.pinnedBy.includes(user.id);
+          alreadyPinned
+              ? tender.pinnedBy.pull(user.id)
+              : tender.pinnedBy.push(user.id);
+          await tender.save();
+          return tender;
+      }
+
+      // contractor-only field edit
+      if (user.role !== "Contractor") throw new ErrorResponse("Not authorized", 403);
+
+      //Never allow direct overwrite of these array fields
+      const { pinnedBy, interestedBy, createdBy, ...safeBody } = body;
+
+      const updated = await Tender.findByIdAndUpdate(tenderId, safeBody, { new: true });
+      return updated;
   }
 
-  //when a tender is delted there sbould be two options, one to remove it permanently and the other to make it a project and assign it proper contractor , supervisor and all.
-  static async deleteTenderService(tenderId, user, action, extraData = {}) {
-    if (user.role !== "Contractor") {
-      throw new ErrorResponse("Not authorised to delete tenders",403);
-    }
+    //when a tender is delted there sbould be two options, one to remove it permanently and the other to make it a project and assign it proper contractor , supervisor and all.
+    static async deleteTenderService(tenderId, user, action, extraData = {}) {
+      if (user.role !== "Contractor") {
+        throw new ErrorResponse("Not authorised to delete tenders",403);
+      }
 
     const tender = await Tender.findById(tenderId);
     if (!tender) throw new ErrorResponse("Tender not found",404);

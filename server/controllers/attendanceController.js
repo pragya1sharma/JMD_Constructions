@@ -7,7 +7,7 @@ class AttendanceController {
   static initAttendance = asyncHandler(async (req, res) => {
     const attendance = await AttendanceService.initProjectAttendance(
       req.params.projectId,
-      req.user._id
+      req.user.id
     );
     res.status(201).json({ success: true, data: attendance });
   });
@@ -34,7 +34,7 @@ class AttendanceController {
       req.params.projectId,
       date,
       entries,
-      req.user._id
+      req.user.id
     );
     res.status(200).json({ success: true, data: attendance });
   });
@@ -58,7 +58,7 @@ class AttendanceController {
   static getCategoryAttendance = asyncHandler(async (req, res) => {
     const data = await AttendanceService.getCategoryAttendance(
       req.params.projectId,
-      req.query.name
+      req.query.category
     );
     res.status(200).json({ success: true, data });
   });

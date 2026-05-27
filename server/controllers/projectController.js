@@ -9,7 +9,7 @@ class ProjectController{
     //createProject
     static createProject = asyncHandler(async(req,res)=>{
         const data = req.body;
-        const userId = req.user._id;
+        const userId = req.user.id;
         const project = await ProjectService.createProject(data,userId);
 
         res.status(201).json({
@@ -71,11 +71,13 @@ class ProjectController{
         const projectId = req.params.id;
         const newSup = req.body.supervisorId;
         const user = req.user;
+        console.log(newSup);
         const msg = await ProjectService.changeSupervisor(projectId,newSup,user);
 
         res.status(200).json({
             success:true,
-            message:msg
+            message:msg.message
+            
         });
     });
 
@@ -88,7 +90,7 @@ class ProjectController{
 
         res.status(200).json({
             success:true,
-            msg : msg
+            message : msg.message
         });
     });
 
@@ -101,7 +103,7 @@ class ProjectController{
 
     res.status(200).json({
         success: true,
-        message: msg
+        message: msg.message
     });
 });
 

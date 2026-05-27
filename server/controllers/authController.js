@@ -56,26 +56,35 @@ static getMe = asyncHandler(async (req, res, next) => {
   });
 
   //chnagePassword
+
+  //req.user is what we get from the protect middleware when the route calls this controller, and that passes the safe data.
+  //thus we set user.id = user._id, so here user is not the mongoDB object document corresponding to the user containing all his info,
+  //rather this is the safe pasred user returned from te protect jiski id hai ._id nahin.
   static changePassword = asyncHandler(async(req,res)=>{
-    const userId = req.user._id;
+    const userId = req.user.id.toString();
+    const user = req.user
+    console.log(user);
+    
     const oldPassword = req.body.oldPassword;
     const newPassword = req.body.newPassword;
 
     const msg = await AuthService.changePassword(userId,oldPassword,newPassword);
     res.status(200).json({
-        message:msg,
+        message:msg.message,
         success:true
     });
   });
   //deleteUser
-  static deleteUser = asyncHandler(async(req,res)=>{
-    const userId = req.user._id;
-    const msg = await AuthService.deleteUser(userId);
-    res.status(200).json({
-        message:msg,
-        success:true
+ static deleteUser = asyncHandler(async(req,res)=>{
+        const userId = req.params.id;
+
+        const msg = await AuthService.deleteUser(userId);
+
+        res.status(200).json({
+            message: msg.message,
+            success:true
+        });
     });
-  });
   //
 
 }

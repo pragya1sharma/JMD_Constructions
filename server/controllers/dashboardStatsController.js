@@ -4,7 +4,7 @@ import DashboardService from "../services/dashBoardStatsService.js";
 class DashboardController {
 
     static getContractorStats = asyncHandler(async (req, res) => {
-        const contractorId = req.user._id;
+        const contractorId = req.user.id;
         const stats = await DashboardService.getContractorStats(contractorId);
         res.status(200).json({ success: true, data: stats });
     });

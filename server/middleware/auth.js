@@ -23,12 +23,14 @@ const protect = asyncHandler(async (req, res, next) => {
     if (!currentUser) {
         throw new ErrorResponse('Session no longer valid. Please login again.', 401);
     }
-
+    
     req.user = currentUser;
+    
     next();
 });
 
 const authorize = (...roles) => {
+
     return (req, res, next) => {
         if (!roles.includes(req.user.role)) {
             throw new ErrorResponse(

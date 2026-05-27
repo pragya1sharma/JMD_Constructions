@@ -1,5 +1,6 @@
 import Project from "../models/project.js";
 import AttendanceLog from "../models/Attendance.js"; // 
+import User from "../models/user.js";
 import ErrorResponse from "../utils/errorResponse.js";
 
 class ProjectService {
@@ -19,7 +20,10 @@ class ProjectService {
     const project = await Project.findById(projectId);
     if (!project) throw new ErrorResponse("Project not found", 404);
 
-    if (user.role !== "Contractor" || project.assignedContractor.toString() !== user._id.toString()) {
+    const currentUserId = user.id?.toString() || user._id?.toString();
+    const projectContractorId = project.assignedContractor?.toString();
+
+    if (user.role !== "Contractor" || projectContractorId !== currentUserId) {
       throw new ErrorResponse("Not authorized", 403);
     }
 
@@ -34,7 +38,10 @@ class ProjectService {
     const project = await Project.findById(projectId);
     if (!project) throw new ErrorResponse("Project not found!", 404);
 
-    if (user.role !== "Contractor" || project.assignedContractor.toString() !== user._id.toString()) {
+    const currentUserId = user.id?.toString() || user._id?.toString();
+    const projectContractorId = project.assignedContractor?.toString();
+
+    if (user.role !== "Contractor" || projectContractorId !== currentUserId) {
       throw new ErrorResponse("Not authorized", 403);
     }
     await project.deleteOne(); //delteOne has to be on the instance and not the model.
@@ -60,17 +67,21 @@ class ProjectService {
 
   //CHANGE THE SUPERVISOR
   static async changeSupervisor(projectId, newSup, user) {
-
-    if (user.role !== 'Contractor') throw new ErrorResponse('No supervisor can change the current project supervisors.',403);
+    if (user.role !== 'Contractor') throw new ErrorResponse('No supervisor can change the current project supervisors.', 403);
 
     const project = await Project.findById(projectId);
-    if (!project) throw new ErrorResponse('Project with the mentioend ID Not found', 404);
+    if (!project) throw new ErrorResponse('Project with the mentioned ID Not found', 404);
 
-    if (user._id.toString() !== project.assignedContractor.toString()) throw new ErrorResponse("This project is not managed by you, only assigend contractors can change the supervisors.",403);
-    if (project.assignedSupervisor.toString() != newSup._id.toString()) {
-      project.assignedSupervisor = newSup._id;
+    const currentUserId = user.id?.toString() || user._id?.toString();
+    const projectContractorId = project.assignedContractor?.toString();
+
+    if (currentUserId !== projectContractorId) throw new ErrorResponse("This project is not managed by you, only assigned contractors can change the supervisors.", 403);
+
+    if (project.assignedSupervisor?.toString() !== newSup?.toString()) {
+      project.assignedSupervisor = newSup; 
       await project.save();
     }
+
     return { message: `Supervisor for the project ${projectId} changed to ${project.assignedSupervisor}` };
   }
 
@@ -80,8 +91,9 @@ class ProjectService {
     const project = await Project.findById(projectId);
     if (!project) throw new ErrorResponse("Project not found",404);
 
-    const isContractor = user.role === "Contractor" && project.assignedContractor.toString() === user._id.toString();
-    const isSupervisor = user.role === "Supervisor" && project.assignedSupervisor.toString() === user._id.toString();
+    const currentUserId = user.id?.toString() || user._id?.toString();
+    const isContractor = user.role === "Contractor" && project.assignedContractor?.toString() === currentUserId;
+    const isSupervisor = user.role === "Supervisor" && project.assignedSupervisor?.toString() === currentUserId;
 
     if (!isContractor && !isSupervisor) throw new ErrorResponse("Not authorized",403);
 
@@ -98,13 +110,13 @@ class ProjectService {
         throw new ErrorResponse('Project already has a supervisor. Use change supervisor instead.', 400);
     }
 
-    const supervisor = await User.findOne({ _id: supervisorId, role: 'Supervisor' });
+    const supervisor = await User.findOne({ id: supervisorId, role: 'Supervisor' });
     if (!supervisor) throw new ErrorResponse('Supervisor not found', 404);
 
     project.assignedSupervisor = supervisorId;
     await project.save();
 
-    return `Supervisor ${supervisor.name} has been assigned to the project`;
+    return { message: `Supervisor ${supervisor.name} has been assigned to the project` };
 }
 
 }

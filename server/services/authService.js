@@ -103,7 +103,7 @@ class AuthService{
     */
    static getSafeUserData(user){
     return {
-        id : user._id,
+        id : user._id?.toString(),
         name : user.name,
         
         role : user.role,

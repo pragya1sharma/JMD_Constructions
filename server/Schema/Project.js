@@ -50,9 +50,6 @@ const projectSchema = new mongoose.Schema(
 
     expectedEndDate: {
       type: Date,
-      required: function () {
-        return this.type !== 'Completed';
-      },
       validate: {
         validator: function (value) {
           if (this.type !== 'Completed' && value && this.startDate) {
@@ -67,7 +64,6 @@ const projectSchema = new mongoose.Schema(
     /** Visible to contractors in UI; filter in API/FE for supervisors if needed */
     expectedBudget: {
       type: Number,
-      required: [true, 'Expected budget is required'],
       min: [0, 'Budget cannot be negative'],
     },
 
@@ -80,7 +76,7 @@ const projectSchema = new mongoose.Schema(
     assignedSupervisor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: [true, 'A supervisor must be assigned to the project'],
+      required: [function () { return this.status !== 'Future'; }, 'A supervisor must be assigned unless the project status is set to Future'],
     },
 
     siteLocation: {

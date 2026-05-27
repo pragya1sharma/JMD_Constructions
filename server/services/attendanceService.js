@@ -19,8 +19,9 @@ class AttendanceService {
 
     if (attendance) return attendance;
 
-    attendance = await Attendance.create({
+      attendance = await Attendance.create({
       project: projectId,
+      categories: DEFAULT_CATEGORIES.map(name => ({ name, isCustom: false })),
       logs: [],
     });
 
@@ -63,9 +64,7 @@ class AttendanceService {
     const attendance = await Attendance.findOne({ project: projectId });
     if (!attendance) throw new ErrorResponse('Attendance not found',404);
 
-    const defaults = DEFAULT_CATEGORIES.map(name => ({ name, isCustom: false }));
-
-    return [...defaults, ...attendance.categories];
+    return attendance.categories;
   }
 
   /**

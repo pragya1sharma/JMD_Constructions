@@ -7,7 +7,7 @@ class InventoryController {
     static createItem = asyncHandler(async (req, res) => {
         const { name, unit } = req.body;
         const projectId = req.params.projectId;
-        const userId = req.user._id;
+        const userId = req.user.id;
         const item = await InventoryService.createItem({ name, unit, projectId, userId });
         res.status(201).json({ success: true, message: "Item created successfully", data: item });
     });

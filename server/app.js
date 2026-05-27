@@ -69,6 +69,8 @@ app.get('/api/v1', (req, res) => {
     });
 });
 
+
+
 // Mount routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/projects', projectRoutes);

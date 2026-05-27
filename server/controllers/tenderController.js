@@ -5,7 +5,7 @@ class TenderController{
     //createTender
     static createTender = asyncHandler(async(req,res)=>{
         const data = req.body;
-        const userId = req.user._id;
+        const userId = req.user.id;
         const tender = await TenderService.createTenderService(data,userId);
 
         res.status(201).json({
@@ -17,7 +17,7 @@ class TenderController{
     //getAlltenders
     static getAllTenders = asyncHandler(async(req,res)=>{
         const query = req.query;
-        const userId = req.user._id;
+        const userId = req.user.id;
         const tenders = await TenderService.getAllTendersService(query,userId);
 
         res.status(200).json({
@@ -50,7 +50,7 @@ class TenderController{
         const msg = await TenderService.deleteTenderService(tenderId,user,action,extraData);
         res.status(200).json({
             success:true,
-            message :msg,
+            message :msg.message,
         })
     })
     //get tender by id

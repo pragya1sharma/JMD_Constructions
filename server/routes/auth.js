@@ -17,6 +17,5 @@ router.post('/login',loginLimiter, validateRequest(loginSchema), AuthController.
 router.get('/me', protect, AuthController.getMe);
 router.post('/logout', protect, AuthController.logout);
 router.put('/change-password', protect, AuthController.changePassword);
-router.delete('/delete/:id', protect, authorize('Contractor'), AuthController.deleteUser);
-
+router.delete('/delete/:id',protect,authorize('Contractor'),AuthController.deleteUser);
 export default router;
