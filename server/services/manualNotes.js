@@ -4,31 +4,33 @@ import ErrorResponse from "../utils/errorResponse.js";
 
 class ManualNotesService {
 
-    //create note
-    static async createNote(userID, message) {
+    // Create note
+    static async createNote(userID, message, metadata = {}) {
         const user = await USER.findById(userID);
 
         if (!user) {
-            throw new ErrorResponse(
-                "Note cannot be created without the user",
-                404
-            );
+            throw new ErrorResponse("Note cannot be created without the user", 404);
         }
 
         const note = await NOTES.create({
             notes: message,
-            createdBy: user._id
+            createdBy: user._id,
+            metadata: metadata
         });
 
         return note;
     }
 
-    //delete note
+    static async getNotes(userID) {
+        const notes = await NOTES.find({ createdBy: userID }).sort({ createdAt: -1 });
+        if (notes.length === 0) {
+            throw new ErrorResponse("No note found created by the given user", 404);
+        }
+        return notes;
+    }
+
+    // Delete note
     static async deleteNote(noteID, userID) {
-
-        // a note can be either deleted by
-        // the person who wrote it or it will be automatically deleted after 3 months of its creation.
-
         const note = await NOTES.findById(noteID);
 
         if (!note) {
@@ -43,28 +45,34 @@ class ManualNotesService {
         const isExpired = note.createdAt < threeMonthsAgo;
 
         if (creator !== userID && !isExpired) {
-            throw new ErrorResponse(
-                "User not authorised to delete this note",
-                403
-            );
+            throw new ErrorResponse("User not authorised to delete this note", 403);
         }
 
         await NOTES.findByIdAndDelete(noteID);
+        return { message: "Note deleted successfully" };
     }
 
-    //edit note
+    // Edit note
     static async editNote(noteID, userID, message) {
         const note = await NOTES.findById(noteID);
 
         if (!note) {
             throw new ErrorResponse("No such note found", 404);
         }
+
         const creator = note.createdBy.toString();
-        if (creator !== userID) throw new ErrorResponse("User not allowed to edit this note", 403);
-        const updatedNote = await NOTES.findByIdAndUpdate(noteID, { notes: message }, { new: true });
+        if (creator !== userID) {
+            throw new ErrorResponse("User not allowed to edit this note", 403);
+        }
+
+        const updatedNote = await NOTES.findByIdAndUpdate(
+            noteID, 
+            { notes: message }, 
+            { new: true, runValidators: true }
+        );
+        
         return updatedNote;
     }
-
 }
 
 export default ManualNotesService;

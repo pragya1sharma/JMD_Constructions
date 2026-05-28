@@ -41,18 +41,34 @@ class TenderController{
         });
     });
     //delete tender
-    static deleteTender = asyncHandler(async(req,res)=>{
-        const tenderId = req.params.id;
-        const user = req.user;
-        const action = req.body.action;
-        const extraData = req.body.extraData;
+    
+    static deleteTender = asyncHandler(async(req, res) => {
+    const tenderId = req.params.id;
+    const user = req.user;
+    
+    const msg = await TenderService.deleteTenderService(tenderId, user);
+    
+    res.status(200).json({
+        success: true,
+        message: msg.message
+    });
+    });
 
-        const msg = await TenderService.deleteTenderService(tenderId,user,action,extraData);
-        res.status(200).json({
-            success:true,
-            message :msg.message,
-        })
-    })
+    //convert tender to project
+    // Controller
+    static convertTenderToProject = asyncHandler(async(req, res) => {
+    const tenderId = req.params.id;
+    const user = req.user;
+    const projectData = req.body; // Directly receive project data
+    
+    const result = await TenderService.convertTenderToProjectService(tenderId, user, projectData);
+    
+    res.status(200).json({
+        success: true,
+        message: result.message,
+        project: result.project
+    });
+    });
     //get tender by id
     static getTenderById = asyncHandler(async(req,res)=>{
         const tenderId = req.params.id;

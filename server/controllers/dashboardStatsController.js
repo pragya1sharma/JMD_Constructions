@@ -11,7 +11,8 @@ class DashboardController {
 
     static getSupervisorStats = asyncHandler(async (req, res) => {
         const projectId = req.params.projectId;
-        const stats = await DashboardService.getSupervisorStats(projectId);
+        const supervisorId = req.user.id;
+        const stats = await DashboardService.getSupervisorStats(projectId, supervisorId);
         res.status(200).json({ success: true, data: stats });
     });
 

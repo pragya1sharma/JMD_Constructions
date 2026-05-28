@@ -1,5 +1,5 @@
 import InventoryItem from '../models/inventoryItem.js';
-import ErrorResponse from '../utils/ErrorResponse.js';
+import ErrorResponse from '../utils/errorResponse.js';
 
 class InventoryService {
   /**

@@ -12,5 +12,6 @@ router.get('/', protect, TenderController.getAllTenders);
 router.get('/:id', protect, TenderController.getTenderById);
 router.put('/:id', protect, validateRequest(updateTenderSchema), TenderController.updateTender);
 router.delete('/:id', protect, authorize('Contractor'), validateRequest(deleteTenderSchema), TenderController.deleteTender);
+router.post('/:id/convert', protect, authorize('Contractor'), TenderController.convertTenderToProject);
 
 export default router;

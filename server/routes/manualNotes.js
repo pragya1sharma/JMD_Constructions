@@ -8,6 +8,7 @@ import { createNoteSchema, editNoteSchema } from '../validations/notesValidation
 const router = express.Router();
 
 router.post('/', protect, validateRequest(createNoteSchema), ManualNotesController.createNote);
+router.get('/', protect, ManualNotesController.getNotes);
 router.put('/:id', protect, validateRequest(editNoteSchema), ManualNotesController.editNote);
 router.delete('/:id', protect, ManualNotesController.deleteNote);
 

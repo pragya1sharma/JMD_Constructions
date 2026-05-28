@@ -9,18 +9,29 @@ class VendorService{
     static async createVendor(data,user){
         // const {name,category,phone,email,address,gstNumber,notes,rating,isActive,createdBy} = userData;
         if(user.role!=="Contractor") throw new ErrorResponse("Not authorised to create new vendor!",403);
-        const vendor = await Vendor.create({...data,createdBy : user._id});
+        const vendor = await Vendor.create({...data,createdBy : user._id,isActive:true});
         return vendor;
     }
 
-    //update the vendor detials.
-    static async updateVendor(vendorId,data,user){
-        const vendor = await  Vendor.findById(vendorId);
-        if(!vendor) throw new ErrorResponse("Vendor not found!",404);
-        if(user.role!=="Contractor") throw new ErrorResponse("Not authorised to update a vendor",403);
+    //ON DELETE :- the status is set to in
 
-        const updated = await Vendor.findByIdAndUpdate(vendorId,{$set : data},{new : true});
-        return updated;
+    //update vendor details, only the contractor who created the vendor can update it.
+    static async updateVendor(vendorId, data, user) {
+      const vendor = await Vendor.findById(vendorId);
+      if (!vendor) throw new ErrorResponse("Vendor not found!", 404);
+      if (user.role !== "Contractor") throw new ErrorResponse("Not authorised to update a vendor", 403);
+
+      const updated = await Vendor.findOneAndUpdate(
+        { _id: vendorId },
+        { $set: data },
+        { 
+          new: true, 
+          runValidators: true,
+          overwrite: false // This ensures false values are set
+        }
+      );
+      
+      return updated;
     }
 
     static async filterVendors(query) {

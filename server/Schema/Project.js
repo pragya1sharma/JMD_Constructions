@@ -82,7 +82,7 @@ const projectSchema = new mongoose.Schema(
     siteLocation: {
       address: {
         type: String,
-        required: [true, 'Site address or location description is required'],
+        required: [true, 'Site address or location description is required.'],
         trim: true,
         maxlength: [500, 'Address cannot exceed 500 characters'],
       },

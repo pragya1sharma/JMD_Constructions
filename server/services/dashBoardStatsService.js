@@ -1,8 +1,8 @@
 import Project from "../models/project.js";
 import Tender from "../models/tender.js";
-import Worker from "../models/Worker.js";
+import Worker from "../models/worker.js";
 import Inventory from "../models/inventoryItem.js";
-import Attendance from "../models/Attendance.js";
+import Attendance from "../models/attendance.js";
 import ErrorResponse from "../utils/errorResponse.js";
 
 class DashboardService {
@@ -18,8 +18,6 @@ class DashboardService {
             Project.countDocuments({ assignedContractor: contractorId, status: 'Completed' }),
             Project.countDocuments({ assignedContractor: contractorId, status: 'Future' }),
         ]);
-        // Promise.all runs all three queries simultaneously instead of one by one
-        // much faster than awaiting each separately
 
         // Open tenders
         const openTenders = await Tender.countDocuments({ status: 'Open' });
@@ -27,7 +25,7 @@ class DashboardService {
         // Active workers across all contractor's projects
         const contractorProjects = await Project.find(
             { assignedContractor: contractorId },
-            '_id' // only fetch _id, nothing else needed
+            '_id'
         );
         const projectIds = contractorProjects.map(p => p._id);
         const activeWorkers = await Worker.countDocuments({
@@ -52,8 +50,19 @@ class DashboardService {
     /*
      * Stats for supervisor dashboard
      * @param {String} projectId
+     * @param {String} supervisorId
      */
-    static async getSupervisorStats(projectId) {
+    static async getSupervisorStats(projectId, supervisorId) {
+        // Security fix: Verify that this supervisor is assigned to the project
+        const project = await Project.findOne({ 
+            _id: projectId, 
+            assignedSupervisor: supervisorId 
+        });
+
+        if (!project) {
+            throw new ErrorResponse('Forbidden', 403);
+        }
+
         // Active workers on this project
         const activeWorkers = await Worker.countDocuments({
             project: projectId,
